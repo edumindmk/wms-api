@@ -1,17 +1,18 @@
-import { IsEnum, IsNotEmpty, IsOptional, IsString } from "class-validator";
-import { Role } from "../entities/user.entity";
-
+import { IsEnum, IsOptional, IsString, MinLength } from 'class-validator';
+import { Role } from '../role.enum';
 
 export class UpdateUserDto {
-    @IsString()
-    @IsOptional()
-    name: string;
+  @IsString()
+  @IsOptional()
+  @MinLength(1)
+  name: string;
 
-    @IsString()
-    @IsOptional()
-    password: string;
+  @IsString()
+  @IsOptional()
+  @MinLength(8, { message: 'password must be at least 8 characters' })
+  password: string;
 
-    @IsEnum(Role)
-    @IsOptional()
-    role: Role;
+  @IsEnum(Role)
+  @IsOptional()
+  role: Role;
 }
