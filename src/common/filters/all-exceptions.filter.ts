@@ -33,12 +33,14 @@ export class AllExceptionsFilter extends BaseExceptionFilter {
     const timestamp = new Date().toISOString();
 
     if (exception instanceof HttpException) {
+      const { code, message } = this.payloadFromHttpException(exception);
       return {
         status: exception.getStatus(),
         body: {
           success: false,
           statusCode: exception.getStatus(),
-          message: this.messageFromHttpException(exception),
+          ...(code && { code }),
+          message,
           path,
           timestamp,
         },
@@ -61,21 +63,24 @@ export class AllExceptionsFilter extends BaseExceptionFilter {
     };
   }
 
-  private messageFromHttpException(
-    exception: HttpException,
-  ): string | string[] {
+  private payloadFromHttpException(exception: HttpException): {
+    code?: string;
+    message: string | string[];
+  } {
     const response = exception.getResponse();
     if (typeof response === 'string') {
-      return response;
+      return { message: response };
     }
-    if (
-      typeof response === 'object' &&
-      response !== null &&
-      'message' in response
-    ) {
-      const msg = (response as { message: string | string[] }).message;
-      return msg;
+    if (typeof response === 'object' && response !== null) {
+      const r = response as Record<string, unknown>;
+      const message =
+        'message' in r &&
+        (typeof r.message === 'string' || Array.isArray(r.message))
+          ? (r.message as string | string[])
+          : exception.message;
+      const code = typeof r.code === 'string' ? r.code : undefined;
+      return { code, message };
     }
-    return exception.message;
+    return { message: exception.message };
   }
 }
