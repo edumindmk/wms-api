@@ -1,40 +1,72 @@
-import { Injectable } from '@nestjs/common';
-import { CreateUserDto } from './dto/create-user.dto';
+import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { UpdateUserDto } from './dto/update-user.dto';
-import { ConfigService } from '@nestjs/config';
+import { User } from './entities/user.entity';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
+import { CreateUserDto } from './dto/create-user.dto';
 
 @Injectable()
 export class UsersService {
-  private users: string[] = [];
+  constructor(
+    @InjectRepository(User) 
+    private userRepository: Repository<User>
+  ) {}
 
-  constructor(private readonly configService: ConfigService) {}
+  async create(createUserDto: CreateUserDto) {
+    const user = this.userRepository.create(createUserDto);
+    await this.userRepository.save(user);
 
-  create(createUserDto: any) {
-    this.users.push(createUserDto);
-
-    return 'User created successfully';
+    return {message: "User created successfully", user};
   }
 
-  findAll() {
-    const databaseUrl = this.configService.get('databaseUrl');
-    const jwtSecret = this.configService.get('jwtSecret');
-    const port = this.configService.get('port');
-    console.log(databaseUrl);
-    console.log(jwtSecret);
-    console.log(port);
+  async findAll() {
+   const users = await this.userRepository.find();
 
-    return this.users;
+   return users;
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} user`;
+  async findOne(id: string) {
+    const user = await this.userRepository.findOne({ where: { id } });
+
+    if (!user) {
+      throw new HttpException('User not found', HttpStatus.NOT_FOUND);
+    }
+
+    return user;
   }
 
-  update(id: number, updateUserDto: UpdateUserDto) {
-    return `This action updates a #${id} user`;
+  async update(id: string, updateUserDto: UpdateUserDto) {
+    const user = await this.userRepository.findOne({ where: { id } });
+
+    if (!user) {
+      throw new HttpException('User not found', HttpStatus.NOT_FOUND);
+    }
+
+    const normalizedUpdateUserDto = pickDefined(updateUserDto);
+
+    const updatedUser = await this.userRepository.save({ ...user, ...normalizedUpdateUserDto });
+
+    return updatedUser;
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} user`;
+  async remove(id: string) {
+    const user = await this.userRepository.findOne({ where: { id } });
+
+    if (!user) {
+      throw new HttpException('User not found', HttpStatus.NOT_FOUND);
+    }
+
+    await this.userRepository.delete(id);
+
+    return {message: "User deleted successfully"};
   }
+
+  
+}
+
+
+export function pickDefined<T extends object>(obj: T): Partial<T> {
+  return Object.fromEntries(
+    Object.entries(obj).filter(([, v]) => v !== undefined),
+  ) as Partial<T>;
 }

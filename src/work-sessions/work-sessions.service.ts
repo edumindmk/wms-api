@@ -10,7 +10,7 @@ export class WorkSessionsService {
   create(createWorkSessionDto: CreateWorkSessionDto) {
     const userId = createWorkSessionDto?.userId;
 
-    const user = this.usersService.findOne(+userId);
+    const user = this.usersService.findOne(userId);
 
     const workSession = {
       user,
