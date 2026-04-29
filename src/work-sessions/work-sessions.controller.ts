@@ -19,16 +19,16 @@ export class WorkSessionsController {
 
   @Get(':id')
   findOne(@Param('id') id: string) {
-    return this.workSessionsService.findOne(+id);
+    return this.workSessionsService.findOne(id);
   }
 
   @Patch(':id')
   update(@Param('id') id: string, @Body() updateWorkSessionDto: UpdateWorkSessionDto) {
-    return this.workSessionsService.update(+id, updateWorkSessionDto);
+    return this.workSessionsService.update(id, updateWorkSessionDto);
   }
 
   @Delete(':id')
   remove(@Param('id') id: string) {
-    return this.workSessionsService.remove(+id);
+    return this.workSessionsService.remove(id);
   }
 }

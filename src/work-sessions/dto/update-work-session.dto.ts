@@ -1,4 +1,19 @@
-import { PartialType } from '@nestjs/mapped-types';
-import { CreateWorkSessionDto } from './create-work-session.dto';
+import { IsDateString, IsOptional, IsString, IsUUID } from 'class-validator';
 
-export class UpdateWorkSessionDto extends PartialType(CreateWorkSessionDto) {}
+export class UpdateWorkSessionDto {
+  @IsOptional()
+  @IsUUID('4')
+  userId?: string;
+
+  @IsOptional()
+  @IsDateString()
+  startAt: Date;
+
+  @IsOptional()
+  @IsDateString()
+  endAt: Date;
+
+  @IsOptional()
+  @IsString()
+  description: string;
+}

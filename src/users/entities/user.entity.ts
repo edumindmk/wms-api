@@ -2,10 +2,12 @@ import {
   Column,
   CreateDateColumn,
   Entity,
+  OneToMany,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
 import { Role } from '../role.enum';
+import { WorkSession } from 'src/work-sessions/entities/work-session.entity';
 
 @Entity('users')
 export class User {
@@ -23,6 +25,9 @@ export class User {
 
   @Column()
   role: Role;
+
+  @OneToMany(() => WorkSession, (workSession) => workSession.user)
+  workSessions: WorkSession[];
 
   @CreateDateColumn()
   createdAt: Date;
