@@ -3,6 +3,7 @@ import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { UsersModule } from './users/users.module';
 import { WorkSessionsModule } from './work-sessions/work-sessions.module';
+import { CompaniesModule } from './companies/companies.module';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import appConfig from './config/app.config';
 import { TypeOrmModule } from '@nestjs/typeorm';
@@ -11,6 +12,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
   imports: [
     UsersModule,
     WorkSessionsModule,
+    CompaniesModule,
     ConfigModule.forRoot({
       isGlobal: true,
       load: [appConfig],
