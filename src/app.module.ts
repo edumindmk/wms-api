@@ -6,11 +6,13 @@ import { WorkSessionsModule } from './work-sessions/work-sessions.module';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import appConfig from './config/app.config';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { CompanyModule } from './company/company.module';
 
 @Module({
   imports: [
     UsersModule,
     WorkSessionsModule,
+    CompanyModule,
     ConfigModule.forRoot({
       isGlobal: true,
       load: [appConfig],
@@ -28,8 +30,9 @@ import { TypeOrmModule } from '@nestjs/typeorm';
       }),
       inject: [ConfigService],
     }),
+    CompanyModule,
   ],
   controllers: [AppController],
   providers: [AppService],
 })
-export class AppModule {}
+export class AppModule { }
