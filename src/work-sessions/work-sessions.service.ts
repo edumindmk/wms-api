@@ -13,8 +13,7 @@ export class WorkSessionsService {
     private workSessionRepository: Repository<WorkSession>
   ) {}
 
-  async create(createWorkSessionDto: CreateWorkSessionDto) {
-    const userId = createWorkSessionDto?.userId;
+  async create(userId: string, createWorkSessionDto: CreateWorkSessionDto) {
     const startAt = new Date(createWorkSessionDto.startAt);
     const endAt = new Date(createWorkSessionDto.endAt);
 
