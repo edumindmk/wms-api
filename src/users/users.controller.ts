@@ -7,18 +7,25 @@ import {
   ParseUUIDPipe,
   Patch,
   Post,
+  UseGuards,
 } from '@nestjs/common';
 import { UsersService } from './users.service';
-import { CreateUserDto } from './dto/create-user.dto';
+import { CreateUserEmployeeDto } from './dto/create-user-employee.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
+import { Roles } from './roles.decorator';
+import { Role } from './role.enum';
+import { RolesGuard } from './roles.guard';
+import { JwtAuthGuard } from 'src/auth/jwt.guard';
 
 @Controller('users')
+@Roles(Role.ADMIN)
+@UseGuards(JwtAuthGuard, RolesGuard)
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 
   @Post()
-  create(@Body() createUserDto: CreateUserDto) {
-    return this.usersService.create(createUserDto);
+  create(@Body() createUserDto: CreateUserEmployeeDto) {
+    return this.usersService.createEmployee(createUserDto);
   }
 
   @Get()

@@ -3,8 +3,11 @@ import { UpdateUserDto } from './dto/update-user.dto';
 import { User } from './entities/user.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { QueryFailedError, Repository } from 'typeorm';
-import { CreateUserDto } from './dto/create-user.dto';
+import { CreateUserType } from './types/create-user';
 import { throwEmailAlreadyExists, throwUserNotFound } from 'src/common/errors';
+import * as bcrypt from 'bcrypt';
+import { CreateUserEmployeeDto } from './dto/create-user-employee.dto';
+import { Role } from './role.enum';
 
 @Injectable()
 export class UsersService {
@@ -12,11 +15,17 @@ export class UsersService {
     @InjectRepository(User)
     private userRepository: Repository<User>,
   ) {}
+  async createEmployee(createUserDto: CreateUserEmployeeDto) {
+    return this.createUser({ ...createUserDto, role: Role.USER });
+  }
 
-  async create(createUserDto: CreateUserDto) {
+  async createUser(createUser: CreateUserType) {
     try {
-      const user = this.userRepository.create(createUserDto);
+      const hashedPassword = await bcrypt.hash(createUser.password, 10);
+      
+      const user = this.userRepository.create({ ...createUser, password: hashedPassword });
       await this.userRepository.save(user);
+
       return { message: 'User created successfully', user };
     } catch (e: unknown) {
       if (e instanceof QueryFailedError && isPostgresUniqueViolation(e)) {
