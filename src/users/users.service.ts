@@ -8,6 +8,7 @@ import { throwEmailAlreadyExists, throwUserNotFound } from 'src/common/errors';
 import * as bcrypt from 'bcrypt';
 import { CreateUserEmployeeDto } from './dto/create-user-employee.dto';
 import { Role } from './role.enum';
+import { isPostgresUniqueViolation } from 'src/common/utils/postgres-unique-violation';
 
 @Injectable()
 export class UsersService {
@@ -36,7 +37,7 @@ export class UsersService {
   }
 
   async findByEmail(email: string) {
-    const user = await this.userRepository.findOne({ where: { email } });
+    const user = await this.userRepository.findOne({ where: { email }, relations: ['ownedCompany'] });
 
     return user;
   }
@@ -93,9 +94,3 @@ export function pickDefined<T extends object>(obj: T): Partial<T> {
   ) as Partial<T>;
 }
 
-function isPostgresUniqueViolation(e: {
-  code?: string;
-  driverError?: { code?: string };
-}): boolean {
-  return e.code === '23505' || e.driverError?.code === '23505';
-}

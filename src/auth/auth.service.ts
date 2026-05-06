@@ -5,12 +5,14 @@ import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
 import { Role } from 'src/users/role.enum';
 import { LoginDto } from './dto/login.dto';
+import { CompaniesService } from 'src/companies/companies.service';
 
 @Injectable()
 export class AuthService {
   constructor(
     private jwtService: JwtService,
     private usersService: UsersService,
+    private companiesService: CompaniesService,
   ) {}
   
   async register(dto: RegisterDto) {
@@ -19,6 +21,12 @@ export class AuthService {
       email: dto.email,
       role: Role.ADMIN,
       password: dto.password,
+    });
+
+    await this.companiesService.createCompany({
+      name: dto.companyName,
+      address: dto.companyAddress,
+      owner: user.user,
     });
 
     return user.message;
@@ -37,7 +45,7 @@ export class AuthService {
       throw new UnauthorizedException('Invalid credentials');
     }
 
-    const payload = { sub: user.id, email: user.email, role: user.role };
+    const payload = { sub: user.id, email: user.email, role: user.role, companyId: user.ownedCompany.id };
 
     return {
       access_token: this.jwtService.sign(payload),
