@@ -1,31 +1,49 @@
-import { User } from "src/users/entities/user.entity";
-import { WorkSession } from "src/work-sessions/entities/work-session.entity";
-import { Column, CreateDateColumn, Entity, JoinColumn, OneToMany, OneToOne, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
+import { User } from 'src/users/entities/user.entity';
+import { WorkSession } from 'src/work-sessions/entities/work-session.entity';
+import {
+  Column,
+  CreateDateColumn,
+  Entity,
+  JoinColumn,
+  OneToMany,
+  OneToOne,
+  PrimaryGeneratedColumn,
+  UpdateDateColumn,
+} from 'typeorm';
+import { ApiHideProperty, ApiProperty } from '@nestjs/swagger';
 
 @Entity('companies')
 export class Company {
-    @PrimaryGeneratedColumn('uuid')
-    id: string;
+  @ApiProperty({ format: 'uuid' })
+  @PrimaryGeneratedColumn('uuid')
+  id: string;
 
-    @Column({ unique: true })
-    name: string;
+  @ApiProperty()
+  @Column({ unique: true })
+  name: string;
 
-    @Column({ nullable: true })
-    address?: string;
-    
-    @OneToMany(() => User, (user) => user.company)
-    users: User[];
+  @ApiProperty({ required: false, nullable: true })
+  @Column({ nullable: true })
+  address?: string;
 
-    @OneToMany(() => WorkSession, (workSession) => workSession.company)
-    workSessions: WorkSession[];
+  @ApiHideProperty()
+  @OneToMany(() => User, (user) => user.company)
+  users: User[];
 
-    @OneToOne(() => User, (user) => user.ownedCompany)
-    @JoinColumn()
-    owner: User;
+  @ApiHideProperty()
+  @OneToMany(() => WorkSession, (workSession) => workSession.company)
+  workSessions: WorkSession[];
 
-    @CreateDateColumn()
-    createdAt: Date;
+  @ApiHideProperty()
+  @OneToOne(() => User, (user) => user.ownedCompany)
+  @JoinColumn()
+  owner: User;
 
-    @UpdateDateColumn()
-    updatedAt: Date;
+  @ApiProperty({ type: String, format: 'date-time' })
+  @CreateDateColumn()
+  createdAt: Date;
+
+  @ApiProperty({ type: String, format: 'date-time' })
+  @UpdateDateColumn()
+  updatedAt: Date;
 }

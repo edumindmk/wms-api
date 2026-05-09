@@ -1,7 +1,7 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
-import { ValidationPipe } from "@nestjs/common";
+import { ValidationPipe } from '@nestjs/common';
 import { AllExceptionsFilter } from './common/filters/all-exceptions.filter';
 
 async function bootstrap() {
@@ -17,9 +17,25 @@ async function bootstrap() {
 
   const config = new DocumentBuilder()
     .setTitle('Workforce Management System')
-    .setDescription('The workforce management system API description')
+    .setDescription(
+      'REST API for workforce management: authentication, users, and work sessions scoped by company.',
+    )
     .setVersion('1.0')
-    .addTag('workforce')
+    .addTag('auth', 'Registration and login')
+    .addTag('users', 'User management (JWT required; most routes admin-only)')
+    .addTag(
+      'work-sessions',
+      "Work sessions for the authenticated user's company (JWT required)",
+    )
+    .addBearerAuth(
+      {
+        type: 'http',
+        scheme: 'bearer',
+        bearerFormat: 'JWT',
+        description: 'JWT from POST /auth/login (Authorization: Bearer <token>)',
+      },
+      'JWT-auth',
+    )
     .build();
 
   const document = SwaggerModule.createDocument(app, config);
