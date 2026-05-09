@@ -17,11 +17,7 @@ import { Roles } from './roles.decorator';
 import { Role } from './role.enum';
 import { RolesGuard } from './roles.guard';
 import { JwtAuthGuard } from 'src/auth/jwt.guard';
-import { Request } from 'express';
-
-type AuthenticatedRequest = Request & {
-  user: { userId: string; email: string; companyId: string, role: Role };
-};
+import type { AuthenticatedRequest } from 'src/common/types/auth-request.type';
 
 @Controller('users')
 @UseGuards(JwtAuthGuard, RolesGuard)

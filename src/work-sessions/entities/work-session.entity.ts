@@ -1,5 +1,6 @@
+import { Company } from "src/companies/entities/company.entity";
 import { User } from "src/users/entities/user.entity";
-import { Column, CreateDateColumn, Entity, ManyToOne, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
+import { Column, CreateDateColumn, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
 
 @Entity('work_sessions')
 export class WorkSession {
@@ -17,6 +18,10 @@ export class WorkSession {
 
   @ManyToOne(() => User, (user) => user.workSessions)
   user: User;
+
+  @ManyToOne(() => Company, (company) => company.workSessions)
+  @JoinColumn({ name: 'companyId' })
+  company: Company;
 
   @CreateDateColumn()
   createdAt: Date;

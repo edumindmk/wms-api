@@ -13,17 +13,18 @@ export class WorkSessionsService {
     private workSessionRepository: Repository<WorkSession>
   ) {}
 
-  async create(userId: string, createWorkSessionDto: CreateWorkSessionDto) {
+  async create(userId: string, companyId: string, createWorkSessionDto: CreateWorkSessionDto) {
     const startAt = new Date(createWorkSessionDto.startAt);
     const endAt = new Date(createWorkSessionDto.endAt);
 
-    await this.checkOverlap(startAt, endAt, userId);
+    await this.checkOverlap(startAt, endAt, userId, companyId);
 
     const workSession = this.workSessionRepository.create({
       ...createWorkSessionDto,
       startAt,
       endAt,
       user: { id: userId },
+      company: { id: companyId },
     });
 
     await this.workSessionRepository.save(workSession);
@@ -31,7 +32,7 @@ export class WorkSessionsService {
     return workSession;
   }
 
-  getWorkSessionsByUserIdAndDate(userId: string, date: Date) {
+  getWorkSessionsByUserIdAndDate(userId: string, companyId: string, date: Date) {
     const d = new Date(date);
     const dayStart = new Date(
       d.getFullYear(),
@@ -54,21 +55,25 @@ export class WorkSessionsService {
 
     return this.workSessionRepository.find({
       where: {
-        user: { id: userId },
+        user: { id: userId, company: { id: companyId } },
         startAt: LessThanOrEqual(dayEnd),
         endAt: MoreThanOrEqual(dayStart),
       },
+      relations: ['user.company'],
     });
   }
 
-  findAll() {
+  findAll(companyId: string) {
     return this.workSessionRepository.find({
-      relations: ['user'],
+      where: {
+        company: { id: companyId },
+      },
+      relations: ['user', 'company'],
     });
   }
 
-  async findOne(id: string) {
-    const workSession = await this.workSessionRepository.findOne({ where: { id }, relations: ['user'] });
+  async findOne(id: string, companyId: string) {
+    const workSession = await this.workSessionRepository.findOne({ where: { id, company: { id: companyId } }, relations: ['user', 'company'] });
 
     if (!workSession) {
       throw new NotFoundException('Work session not found');
@@ -77,10 +82,10 @@ export class WorkSessionsService {
     return workSession;
   }
 
-  async update(id: string, updateWorkSessionDto: UpdateWorkSessionDto) {
+  async update(id: string, companyId: string, updateWorkSessionDto: UpdateWorkSessionDto) {
     const workSession = await this.workSessionRepository.findOne({
-      where: { id },
-      relations: ['user'],
+      where: { id, company: { id: companyId } },
+      relations: ['user', 'company'],
     });
 
     if (!workSession) {
@@ -99,7 +104,7 @@ export class WorkSessionsService {
         : updateWorkSessionDto.endAt;
 
     if (startAt && endAt) {
-      await this.checkOverlap(startAt, endAt, userId, { excludeWorkSessionId: id });
+      await this.checkOverlap(startAt, endAt, userId, companyId, { excludeWorkSessionId: id });
     }
 
     if (updateWorkSessionDto.startAt != null) {
@@ -119,13 +124,14 @@ export class WorkSessionsService {
     startAt: Date,
     endAt: Date,
     userId: string,
+    companyId: string,
     options?: { excludeWorkSessionId?: string },
   ) {
     if (endAt.getTime() <= startAt.getTime()) {
       throw new BadRequestException('endAt must be after startAt');
     }
 
-    const currentWorkSessions = await this.getWorkSessionsByUserIdAndDate(userId, startAt);
+    const currentWorkSessions = await this.getWorkSessionsByUserIdAndDate(userId, companyId, startAt);
 
     for (const session of currentWorkSessions) {
       if (options?.excludeWorkSessionId === session.id) {
@@ -139,8 +145,8 @@ export class WorkSessionsService {
     }
   }
 
-  async remove(id: string) {
-    const workSession = await this.workSessionRepository.findOne({ where: { id } });
+  async remove(id: string, companyId: string) {
+    const workSession = await this.workSessionRepository.findOne({ where: { id, company: { id: companyId } } });
 
     if (!workSession) {
       throw new NotFoundException('Work session not found');
