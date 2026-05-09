@@ -1,23 +1,29 @@
-import { Injectable } from '@nestjs/common';
+import { forwardRef, Inject, Injectable } from '@nestjs/common';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { User } from './entities/user.entity';
 import { InjectRepository } from '@nestjs/typeorm';
-import { QueryFailedError, Repository } from 'typeorm';
+import { Brackets, QueryFailedError, Repository } from 'typeorm';
 import { CreateUserType } from './types/create-user';
 import { throwEmailAlreadyExists, throwUserNotFound } from 'src/common/errors';
 import * as bcrypt from 'bcrypt';
 import { CreateUserEmployeeDto } from './dto/create-user-employee.dto';
 import { Role } from './role.enum';
 import { isPostgresUniqueViolation } from 'src/common/utils/postgres-unique-violation';
+import { CompaniesService } from 'src/companies/companies.service';
 
 @Injectable()
 export class UsersService {
   constructor(
     @InjectRepository(User)
     private userRepository: Repository<User>,
+    private companiesService: CompaniesService,
   ) {}
-  async createEmployee(createUserDto: CreateUserEmployeeDto) {
-    return this.createUser({ ...createUserDto, role: Role.USER });
+  async createEmployee(companyId: string, createUserDto: CreateUserEmployeeDto) {
+    const user = await this.createUser({ ...createUserDto, role: Role.USER });
+
+    await this.companiesService.assignUserToCompany(user.user.id, companyId);
+
+    return { message: 'User created successfully', user };
   }
 
   async createUser(createUser: CreateUserType) {
@@ -37,20 +43,38 @@ export class UsersService {
   }
 
   async findByEmail(email: string) {
-    const user = await this.userRepository.findOne({ where: { email }, relations: ['ownedCompany'] });
+    const user = await this.userRepository.findOne({ where: { email }, relations: ['ownedCompany', 'company'] });
 
     return user;
   }
 
-  async findAll() {
-    const users = await this.userRepository.find();
-
-    return users;
+  async findAll(companyId: string) {
+    const users = await this.userRepository
+    .createQueryBuilder('user')
+    .leftJoinAndSelect('user.ownedCompany', 'ownedCompany')
+    .leftJoinAndSelect('user.company', 'company')
+    .where(
+      new Brackets((qb) => {
+        qb.where('company.id = :companyId', { companyId }).orWhere(
+          'ownedCompany.id = :companyId',
+          { companyId },
+        );
+      }),
+    )
+    .select(['user.id', 'user.name', 'user.email', 'user.role', 'ownedCompany.id', 'company.id'])
+    .getMany();
+    
+    return {users, count: users.length};
   }
 
   async findOne(id: string) {
-    const user = await this.userRepository.findOne({ where: { id } });
+    const user = await this.userRepository.findOne({ 
+      where: { id }, 
+      select: ['id', 'name', 'email', 'role', 'ownedCompany', 'company'], 
+      relations: ['ownedCompany', 'company'] 
+    });
 
+  
     if (!user) {
       throwUserNotFound();
     }

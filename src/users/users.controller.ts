@@ -7,6 +7,7 @@ import {
   ParseUUIDPipe,
   Patch,
   Post,
+  Req,
   UseGuards,
 } from '@nestjs/common';
 import { UsersService } from './users.service';
@@ -16,29 +17,46 @@ import { Roles } from './roles.decorator';
 import { Role } from './role.enum';
 import { RolesGuard } from './roles.guard';
 import { JwtAuthGuard } from 'src/auth/jwt.guard';
+import { Request } from 'express';
+
+type AuthenticatedRequest = Request & {
+  user: { userId: string; email: string; companyId: string, role: Role };
+};
 
 @Controller('users')
-@Roles(Role.ADMIN)
 @UseGuards(JwtAuthGuard, RolesGuard)
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 
   @Post()
-  create(@Body() createUserDto: CreateUserEmployeeDto) {
-    return this.usersService.createEmployee(createUserDto);
+  @Roles(Role.ADMIN)
+  create(@Req() req: AuthenticatedRequest, @Body() createUserDto: CreateUserEmployeeDto) {
+
+    return this.usersService.createEmployee(req.user.companyId, createUserDto);
+  }
+
+  @Get('me')
+  @Roles(Role.ADMIN, Role.USER)
+  getMe(@Req() req: AuthenticatedRequest) {
+    return this.usersService.findOne(req.user.userId);
   }
 
   @Get()
-  findAll() {
-    return this.usersService.findAll();
+  @Roles(Role.ADMIN)
+  findAll(@Req() req: AuthenticatedRequest) {
+    console.log(req.user);
+    
+    return this.usersService.findAll(req.user.companyId);
   }
 
   @Get(':id')
+  @Roles(Role.ADMIN)
   findOne(@Param('id', new ParseUUIDPipe({ version: '4' })) id: string) {
     return this.usersService.findOne(id);
   }
 
   @Patch(':id')
+  @Roles(Role.ADMIN)
   update(
     @Param('id', new ParseUUIDPipe({ version: '4' })) id: string,
     @Body() updateUserDto: UpdateUserDto,
@@ -47,6 +65,7 @@ export class UsersController {
   }
 
   @Delete(':id')
+  @Roles(Role.ADMIN)
   remove(@Param('id', new ParseUUIDPipe({ version: '4' })) id: string) {
     return this.usersService.remove(id);
   }
