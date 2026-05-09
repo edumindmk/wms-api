@@ -44,8 +44,6 @@ export class UsersController {
   @Get()
   @Roles(Role.ADMIN)
   findAll(@Req() req: AuthenticatedRequest) {
-    console.log(req.user);
-    
     return this.usersService.findAll(req.user.companyId);
   }
 
