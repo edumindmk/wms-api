@@ -11,7 +11,7 @@ import { CompaniesModule } from 'src/companies/companies.module';
 @Module({
   imports: [UsersModule, CompaniesModule, PassportModule, JwtModule.registerAsync({
     useFactory: (configService: ConfigService) => ({
-      secret: configService.get('jwtSecret'),
+      secret: configService.getOrThrow<string>('jwtSecret'),
       signOptions: { expiresIn: "1d" }, // 1 day
     }),
     inject: [ConfigService],

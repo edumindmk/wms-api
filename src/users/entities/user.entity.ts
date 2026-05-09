@@ -32,7 +32,7 @@ export class User {
   password: string;
 
   @ApiProperty({ enum: Role })
-  @Column()
+  @Column({ type: 'varchar' })
   role: Role;
 
   @ApiPropertyOptional({ type: () => Company })

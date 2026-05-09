@@ -1,7 +1,6 @@
 import { ApiPropertyOptional } from '@nestjs/swagger';
-import { IsEnum, IsObject, IsOptional, IsString, MinLength } from 'class-validator';
+import { IsEnum, IsOptional, IsString, MinLength } from 'class-validator';
 import { Role } from '../role.enum';
-import { Company } from 'src/companies/entities/company.entity';
 
 export class UpdateUserDto {
   @ApiPropertyOptional({ example: 'Jane Employee' })
@@ -20,9 +19,4 @@ export class UpdateUserDto {
   @IsEnum(Role)
   @IsOptional()
   role?: Role;
-
-  @ApiPropertyOptional({ description: 'Company relation payload for advanced updates' })
-  @IsOptional()
-  @IsObject()
-  company: Company;
 }

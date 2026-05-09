@@ -4,6 +4,7 @@ import { UpdateWorkSessionDto } from './dto/update-work-session.dto';
 import { UsersService } from 'src/users/users.service';
 import { InjectRepository } from '@nestjs/typeorm';
 import { WorkSession } from './entities/work-session.entity';
+import { User } from 'src/users/entities/user.entity';
 import { LessThanOrEqual, MoreThanOrEqual, Repository } from 'typeorm';
 
 @Injectable()
@@ -94,6 +95,9 @@ export class WorkSessionsService {
 
     const userId =
       updateWorkSessionDto.userId ?? workSession.user.id;
+
+    await this.usersService.requireUserInCompany(userId, companyId);
+
     const startAt =
       updateWorkSessionDto.startAt
         ? new Date(updateWorkSessionDto.startAt)
@@ -115,6 +119,9 @@ export class WorkSessionsService {
     }
     if (updateWorkSessionDto.description != null) {
       workSession.description = updateWorkSessionDto.description;
+    }
+    if (updateWorkSessionDto.userId != null) {
+      workSession.user = { id: userId } as User;
     }
 
     return this.workSessionRepository.save(workSession);

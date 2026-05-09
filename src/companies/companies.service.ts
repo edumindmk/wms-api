@@ -34,14 +34,15 @@ export class CompaniesService {
   }
 
   async assignUserToCompany(userId: string, companyId: string) {
-    const user = await this.usersService.findOne(userId);
     const company = await this.companyRepository.findOne({ where: { id: companyId } });
 
-    if (!user || !company) {
-      throw new NotFoundException('User or company not found');
+    if (!company) {
+      throw new NotFoundException('Company not found');
     }
 
-    await this.usersService.update(userId, { company });
+    await this.usersService.linkUserToCompany(userId, companyId);
+
+    const user = await this.usersService.findProfile(userId);
 
     return { message: 'User assigned to company successfully', user };
   }

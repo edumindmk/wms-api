@@ -1,4 +1,5 @@
 import { Module } from '@nestjs/common';
+import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { UsersModule } from './users/users.module';
 import { WorkSessionsModule } from './work-sessions/work-sessions.module';
@@ -25,13 +26,14 @@ import { CompaniesModule } from './companies/companies.module';
         password: configService.get('DATABASE_PASSWORD'),
         database: configService.get('DATABASE_NAME'),
         autoLoadEntities: true,
-        synchronize: true,
+        synchronize: configService.get<string>('nodeEnv') !== 'production',
       }),
       inject: [ConfigService],
     }),
     AuthModule,
     CompaniesModule,
   ],
+  controllers: [AppController],
   providers: [AppService],
 })
 export class AppModule {}

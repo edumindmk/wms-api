@@ -59,7 +59,7 @@ export class UsersController {
   @ApiUnauthorizedResponse()
   @ApiForbiddenResponse()
   getMe(@Req() req: AuthenticatedRequest) {
-    return this.usersService.findOne(req.user.userId);
+    return this.usersService.findProfile(req.user.userId);
   }
 
   @Get()
@@ -79,8 +79,8 @@ export class UsersController {
   @ApiOkResponse({ type: User })
   @ApiUnauthorizedResponse()
   @ApiForbiddenResponse({ description: 'Requires admin role' })
-  findOne(@Param('id', new ParseUUIDPipe({ version: '4' })) id: string) {
-    return this.usersService.findOne(id);
+  findOne(@Req() req: AuthenticatedRequest, @Param('id', new ParseUUIDPipe({ version: '4' })) id: string) {
+    return this.usersService.findOneInCompany(id, req.user.companyId);
   }
 
   @Patch(':id')
@@ -92,10 +92,11 @@ export class UsersController {
   @ApiForbiddenResponse({ description: 'Requires admin role' })
   @ApiBadRequestResponse({ description: 'Validation error' })
   update(
+    @Req() req: AuthenticatedRequest,
     @Param('id', new ParseUUIDPipe({ version: '4' })) id: string,
     @Body() updateUserDto: UpdateUserDto,
   ) {
-    return this.usersService.update(id, updateUserDto);
+    return this.usersService.updateInCompany(id, req.user.companyId, updateUserDto);
   }
 
   @Delete(':id')
@@ -105,7 +106,7 @@ export class UsersController {
   @ApiOkResponse({ type: MessageResponseDto })
   @ApiUnauthorizedResponse()
   @ApiForbiddenResponse({ description: 'Requires admin role' })
-  remove(@Param('id', new ParseUUIDPipe({ version: '4' })) id: string) {
-    return this.usersService.remove(id);
+  remove(@Req() req: AuthenticatedRequest, @Param('id', new ParseUUIDPipe({ version: '4' })) id: string) {
+    return this.usersService.removeFromCompany(id, req.user.companyId);
   }
 }

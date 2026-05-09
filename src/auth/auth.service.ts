@@ -29,7 +29,7 @@ export class AuthService {
       owner: user.user,
     });
 
-    return user.message;
+    return { message: user.message };
   }
 
   async login(dto: LoginDto) {
