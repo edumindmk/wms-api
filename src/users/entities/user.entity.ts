@@ -12,6 +12,7 @@ import { ApiHideProperty, ApiProperty, ApiPropertyOptional } from '@nestjs/swagg
 import { Role } from '../role.enum';
 import { WorkSession } from 'src/work-sessions/entities/work-session.entity';
 import { Company } from 'src/companies/entities/company.entity';
+import { Absence } from 'src/absences/entities/absence.entity';
 
 @Entity('users')
 export class User {
@@ -46,6 +47,10 @@ export class User {
   @ApiHideProperty()
   @OneToMany(() => WorkSession, (workSession) => workSession.user)
   workSessions: WorkSession[];
+
+  @ApiHideProperty()
+  @OneToMany(() => Absence, (absence) => absence.user, { nullable: true })
+  absences?: Absence[];
 
   @ApiProperty({ type: String, format: 'date-time' })
   @CreateDateColumn()

@@ -11,6 +11,7 @@ import {
   UpdateDateColumn,
 } from 'typeorm';
 import { ApiHideProperty, ApiProperty } from '@nestjs/swagger';
+import { Absence } from 'src/absences/entities/absence.entity';
 
 @Entity('companies')
 export class Company {
@@ -38,6 +39,10 @@ export class Company {
   @OneToOne(() => User, (user) => user.ownedCompany)
   @JoinColumn()
   owner: User;
+
+  @ApiHideProperty()
+  @OneToMany(() => Absence, (absence) => absence.company, { nullable: true })
+  absences: Absence[];
 
   @ApiProperty({ type: String, format: 'date-time' })
   @CreateDateColumn()

@@ -8,6 +8,7 @@ import appConfig from './config/app.config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { AuthModule } from './auth/auth.module';
 import { CompaniesModule } from './companies/companies.module';
+import { AbsencesModule } from './absences/absences.module';
 
 @Module({
   imports: [
@@ -32,6 +33,7 @@ import { CompaniesModule } from './companies/companies.module';
     }),
     AuthModule,
     CompaniesModule,
+    AbsencesModule,
   ],
   controllers: [AppController],
   providers: [AppService],
