@@ -18,7 +18,7 @@ async function bootstrap() {
   const config = new DocumentBuilder()
     .setTitle('Workforce Management System')
     .setDescription(
-      'REST API for workforce management: authentication, users, and work sessions scoped by company.',
+      'REST API for workforce management: authentication, users, work sessions, and absences scoped by company.',
     )
     .setVersion('1.0')
     .addTag('auth', 'Registration and login')
@@ -26,6 +26,10 @@ async function bootstrap() {
     .addTag(
       'work-sessions',
       "Work sessions for the authenticated user's company (JWT required)",
+    )
+    .addTag(
+      'absences',
+      'Employee absences for the authenticated company (JWT required; create for self or as admin)',
     )
     .addBearerAuth(
       {

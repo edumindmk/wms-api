@@ -16,6 +16,7 @@ export enum AbsenceStatus {
 
 @Entity('absences')
 export class Absence {
+    @ApiProperty({ format: 'uuid' })
     @PrimaryGeneratedColumn('uuid')
     id: string;
 
@@ -29,7 +30,7 @@ export class Absence {
     @JoinColumn({ name: 'companyId' })
     company: Company;
 
-    @ApiProperty({ type: () => AbsenceType })
+    @ApiProperty({ enum: AbsenceType })
     @Column({ type: 'enum', enum: AbsenceType })
     type: AbsenceType;
 
@@ -41,7 +42,7 @@ export class Absence {
     @Column()
     endDate: Date;
 
-    @ApiProperty({ type: () => AbsenceStatus })
+    @ApiProperty({ enum: AbsenceStatus })
     @Column({ type: 'enum', enum: AbsenceStatus })
     status: AbsenceStatus;
 

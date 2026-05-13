@@ -13,7 +13,7 @@ export class CreateAbsenceDto {
     @IsDateString()
     endDate: Date;
 
-    @ApiProperty({ type: () => AbsenceType })
+    @ApiProperty({ enum: AbsenceType })
     @IsNotEmpty()
     @IsEnum(AbsenceType)
     type: AbsenceType;
