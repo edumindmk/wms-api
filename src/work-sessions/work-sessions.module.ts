@@ -10,5 +10,6 @@ import { User } from 'src/users/entities/user.entity';
   imports: [UsersModule, TypeOrmModule.forFeature([WorkSession])],
   controllers: [WorkSessionsController],
   providers: [WorkSessionsService],
+  exports: [WorkSessionsService],
 })
 export class WorkSessionsModule {}

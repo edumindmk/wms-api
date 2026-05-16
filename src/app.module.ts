@@ -9,6 +9,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { AuthModule } from './auth/auth.module';
 import { CompaniesModule } from './companies/companies.module';
 import { AbsencesModule } from './absences/absences.module';
+import { ReportsModule } from './reports/reports.module';
 
 @Module({
   imports: [
@@ -34,6 +35,7 @@ import { AbsencesModule } from './absences/absences.module';
     AuthModule,
     CompaniesModule,
     AbsencesModule,
+    ReportsModule,
   ],
   controllers: [AppController],
   providers: [AppService],

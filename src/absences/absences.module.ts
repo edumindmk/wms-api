@@ -8,5 +8,6 @@ import { Absence } from './entities/absence.entity';
   imports: [TypeOrmModule.forFeature([Absence])],
   controllers: [AbsencesController],
   providers: [AbsencesService],
+  exports: [AbsencesService],
 })
 export class AbsencesModule {}

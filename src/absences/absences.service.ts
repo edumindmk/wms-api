@@ -1,7 +1,16 @@
-import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { CreateAbsenceDto } from './dto/create-absence.dto';
 import { UpdateAbsenceDto } from './dto/update-absence.dto';
-import { Repository } from 'typeorm';
+import {
+  FindOptionsWhere,
+  LessThanOrEqual,
+  MoreThanOrEqual,
+  Repository,
+} from 'typeorm';
 import { Absence, AbsenceStatus } from './entities/absence.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 
@@ -12,7 +21,11 @@ export class AbsencesService {
     private absenceRepository: Repository<Absence>,
   ) {}
 
-  create(userId: string, companyId: string, createAbsenceDto: CreateAbsenceDto) {
+  create(
+    userId: string,
+    companyId: string,
+    createAbsenceDto: CreateAbsenceDto,
+  ) {
     const startDate = new Date(createAbsenceDto.startDate);
     const endDate = new Date(createAbsenceDto.endDate);
 
@@ -28,7 +41,6 @@ export class AbsencesService {
       throw new BadRequestException('End date must be in the future');
     }
 
-
     try {
       const absence = this.absenceRepository.create({
         user: { id: userId },
@@ -37,7 +49,7 @@ export class AbsencesService {
         endDate,
         type: createAbsenceDto.type,
         status: AbsenceStatus.PENDING,
-        totalDays: Math.ceil((endDate.getDate() - startDate.getDate()) + 1),
+        totalDays: Math.ceil(endDate.getDate() - startDate.getDate() + 1),
       });
 
       return this.absenceRepository.save(absence);
@@ -53,7 +65,7 @@ export class AbsencesService {
           company: { id: companyId },
         },
         relations: ['user', 'company'],
-        });
+      });
 
       return { absences, count };
     } catch (error) {
@@ -75,7 +87,11 @@ export class AbsencesService {
     }
   }
 
-  async updateForUser(userId: string, id: string, updateAbsenceDto: UpdateAbsenceDto) {
+  async updateForUser(
+    userId: string,
+    id: string,
+    updateAbsenceDto: UpdateAbsenceDto,
+  ) {
     try {
       const absence = await this.absenceRepository.findOne({
         where: { id, user: { id: userId } },
@@ -85,7 +101,7 @@ export class AbsencesService {
         throw new NotFoundException('Absence not found');
       }
 
-      if(absence.status !== AbsenceStatus.PENDING) {
+      if (absence.status !== AbsenceStatus.PENDING) {
         throw new BadRequestException('Absence is not pending to be updated');
       }
 
@@ -103,9 +119,13 @@ export class AbsencesService {
     } catch (error) {
       throw new BadRequestException('Failed to update absence');
     }
-  } 
+  }
 
-  async updateForCompany(companyId: string, id: string, updateAbsenceDto: UpdateAbsenceDto) {
+  async updateForCompany(
+    companyId: string,
+    id: string,
+    updateAbsenceDto: UpdateAbsenceDto,
+  ) {
     try {
       const absence = await this.absenceRepository.findOne({
         where: { id, company: { id: companyId } },
@@ -149,6 +169,38 @@ export class AbsencesService {
       return { message: 'Absence deleted successfully' };
     } catch (error) {
       throw new BadRequestException('Failed to delete absence');
+    }
+  }
+
+  async findAllReports(
+    companyId: string,
+    startDate?: string,
+    endDate?: string,
+    employeeId?: string,
+  ) {
+    try {
+      const where: FindOptionsWhere<Absence> = {
+        company: { id: companyId },
+      };
+
+      if (startDate?.trim()) {
+        where.startDate = MoreThanOrEqual(new Date(startDate));
+      }
+      if (endDate?.trim()) {
+        where.endDate = LessThanOrEqual(new Date(endDate));
+      }
+      if (employeeId?.trim()) {
+        where.user = { id: employeeId };
+      }
+
+      const absences = await this.absenceRepository.find({
+        where,
+        relations: ['user', 'company'],
+      });
+
+      return { absences, count: absences.length };
+    } catch (error) {
+      throw new BadRequestException('Failed to get absences');
     }
   }
 }

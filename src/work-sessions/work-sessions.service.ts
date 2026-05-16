@@ -5,7 +5,7 @@ import { UsersService } from 'src/users/users.service';
 import { InjectRepository } from '@nestjs/typeorm';
 import { WorkSession } from './entities/work-session.entity';
 import { User } from 'src/users/entities/user.entity';
-import { LessThanOrEqual, MoreThanOrEqual, Repository } from 'typeorm';
+import { FindOptionsWhere, LessThanOrEqual, MoreThanOrEqual, Repository } from 'typeorm';
 
 @Injectable()
 export class WorkSessionsService {
@@ -162,5 +162,30 @@ export class WorkSessionsService {
     await this.workSessionRepository.delete(id);
 
     return { message: 'Work session deleted successfully' };
+  }
+
+  async findAllReports(companyId: string, startDate?: string, endDate?: string, employeeId?: string) {
+    const where: FindOptionsWhere<WorkSession> = {
+      company: { id: companyId },
+    };
+
+    if (startDate?.trim()) {
+      where.startAt = MoreThanOrEqual(new Date(startDate));
+    }
+    if (endDate?.trim()) {
+      where.endAt = LessThanOrEqual(new Date(endDate));
+    }
+    if (employeeId?.trim()) {
+      where.user = { id: employeeId };
+    }
+
+    const workSessions = await this.workSessionRepository.find({
+      where,
+      relations: ['user', 'company'],
+    });
+
+    const totalHours = workSessions.reduce((acc, session) => acc + (session.endAt.getTime() - session.startAt.getTime()) / 1000 / 60 / 60, 0);
+
+    return { workSessions, totalHours, count: workSessions.length };
   }
 }
