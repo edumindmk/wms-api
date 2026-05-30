@@ -5,6 +5,7 @@ import { UsersModule } from './users/users.module';
 import { WorkSessionsModule } from './work-sessions/work-sessions.module';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import appConfig from './config/app.config';
+import { getDatabaseSsl } from './config/database.config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { AuthModule } from './auth/auth.module';
 import { CompaniesModule } from './companies/companies.module';
@@ -30,6 +31,7 @@ import { LoggerModule } from './logger/logger.module';
         username: configService.get('DATABASE_USERNAME'),
         password: configService.get('DATABASE_PASSWORD'),
         database: configService.get('DATABASE_NAME'),
+        ssl: getDatabaseSsl(),
         autoLoadEntities: true,
         synchronize: configService.get<string>('nodeEnv') !== 'production',
       }),

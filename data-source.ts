@@ -1,6 +1,7 @@
 import { DataSource } from 'typeorm';
 import { config } from 'dotenv';
 import { resolve } from 'path';
+import { getDatabaseConnectionOptions } from './src/config/database.config';
 
 // Load environment variables
 config({ path: resolve(__dirname, '.env') });
@@ -10,12 +11,7 @@ config({ path: resolve(__dirname, '.env') });
 const isCompiled = __filename.endsWith('.js') && __dirname.includes('dist');
 
 export default new DataSource({
-  type: 'postgres',
-  host: process.env.DATABASE_HOST || 'localhost',
-  port: parseInt(process.env.DATABASE_PORT || '5432', 10),
-  username: process.env.DATABASE_USERNAME,
-  password: process.env.DATABASE_PASSWORD,
-  database: process.env.DATABASE_NAME,
+  ...getDatabaseConnectionOptions(),
   entities: isCompiled ? ['dist/**/*.entity.js'] : ['src/**/*.entity.ts'],
   migrations: isCompiled ? ['dist/migrations/*.js'] : ['src/migrations/*.ts'],
   synchronize: false,
