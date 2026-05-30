@@ -11,9 +11,11 @@ import { CompaniesModule } from './companies/companies.module';
 import { AbsencesModule } from './absences/absences.module';
 import { ReportsModule } from './reports/reports.module';
 import { LoggerMiddleware } from './logger/logger.middleware';
+import { LoggerModule } from './logger/logger.module';
 
 @Module({
   imports: [
+    LoggerModule,
     UsersModule,
     WorkSessionsModule,
     ConfigModule.forRoot({
